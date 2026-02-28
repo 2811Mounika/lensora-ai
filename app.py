@@ -65,7 +65,7 @@ def get_place_details(place_id):
 
 
 @app.route("/", methods=["GET", "POST"])
-def home():
+def index():
     photographers = []
 
     if request.method == "POST":

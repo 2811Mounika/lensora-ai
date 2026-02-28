@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lensora AI — Smart Photographer Discovery Engine</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #F3F4F6;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .navbar-custom {
+            background: #111827;
+            padding: 18px 0;
+        }
+
+        .navbar-custom h2 {
+            color: white;
+            font-weight: 600;
+        }
+
+        .hero {
+            padding: 100px 0;
+            text-align: center;
+            background: linear-gradient(to right, #111827, #1E293B);
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #D1D5DB;
+        }
+
+        .section-spacing {
+            padding: 70px 0;
+        }
+
+        .search-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+
+        .photo-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+        }
+
+        .card-img-fixed {
+            height: 220px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .card-body-custom {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .address-fixed {
+            font-size: 14px;
+            color: #6B7280;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .rating-badge {
+            font-weight: 600;
+            font-size: 14px;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-custom">
+    <div class="container">
+        <h2>Lensora AI</h2>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container">
+        <h1>Discover Top Photographers with AI Precision</h1>
+        <p>Smart ranking. Real reviews. Intelligent comparison across districts.</p>
+        <a href="#search" class="btn btn-primary mt-3">Explore Now</a>
+    </div>
+</section>
+
+<section id="search" class="section-spacing">
+    <div class="container">
+        <div class="search-section">
+            <form method="POST" class="row g-3">
+                <div class="col-md-8">
+                    <select name="city" class="form-select form-select-lg" required>
+                        <option disabled selected>Select Location</option>
+                        <option>Guntur</option>
+                        <option>Vijayawada</option>
+                        <option>Narasaraopet</option>
+                        <option>Tenali</option>
+                        <option>Mangalagiri</option>
+                        <option>Amaravati</option>
+                        <option>Sattenapalle</option>
+                        <option>Chilakaluripet</option>
+                        <option>Piduguralla</option>
+                        <option>Repalle</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary btn-lg w-100">Analyze</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% if photographers %}
+<section class="section-spacing">
+<div class="container">
+
+    <!-- Controls -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <input type="text" id="searchInput" class="form-control"
+                   placeholder="Search photographer by name...">
+        </div>
+        <div class="col-md-4">
+            <select id="sortSelect" class="form-select">
+                <option value="rating">Sort by Rating (High → Low)</option>
+                <option value="name">Sort A-Z</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="loader" class="text-center mb-3" style="display:none;">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Processing...</p>
+    </div>
+
+    <div class="row g-4" id="resultsContainer">
+
+        {% for p in photographers %}
+           <div class="col-lg-4 col-md-6 photographer-card fade-in"
+               data-name="{{ p.name|lower }}"
+               data-rating="{{ p.rating }}"
+               data-delay="{{ loop.index * 0.07 }}">
+
+            <div class="photo-card">
+
+                {% if p.photo %}
+                <img src="{{ p.photo }}" class="card-img-fixed">
+                {% endif %}
+
+                <div class="card-body-custom">
+                    <div>
+                        <h5>{{ p.name }}</h5>
+
+                        <span class="rating-badge bg-success text-white">
+                            ⭐ {{ p.rating }}
+                        </span>
+
+                        {% if loop.index == 1 %}
+                        <span class="badge bg-primary ms-2">AI Top Pick</span>
+                        {% endif %}
+
+                        <p class="address-fixed mt-2">{{ p.address }}</p>
+                        <p><strong>📞</strong> {{ p.phone }}</p>
+                    </div>
+
+                    <div class="mt-auto pt-3">
+                        {% if p.website != "Not Available" %}
+                        <a href="{{ p.website }}" target="_blank"
+                           class="btn btn-sm btn-primary">Website</a>
+                        {% endif %}
+                        <a href="{{ p.maps_link }}" target="_blank"
+                           class="btn btn-sm btn-outline-dark">View Map</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+</section>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+    const loader = document.getElementById("loader");
+    const container = document.getElementById("resultsContainer");
+
+    // Apply animation delays from data attributes to avoid inline template in CSS
+    document.querySelectorAll('.photographer-card').forEach(card => {
+        const d = card.dataset.delay;
+        if (d) card.style.animationDelay = parseFloat(d) + 's';
+    });
+
+    if(searchInput){
+        searchInput.addEventListener("input", function() {
+            const value = this.value.toLowerCase();
+            document.querySelectorAll(".photographer-card").forEach(card => {
+                card.style.display =
+                    card.dataset.name.includes(value) ? "block" : "none";
+            });
+        });
+    }
+
+    if(sortSelect){
+        sortSelect.addEventListener("change", function() {
+
+            loader.style.display = "block";
+
+            setTimeout(() => {
+
+                let cards = Array.from(document.querySelectorAll(".photographer-card"));
+
+                if (this.value === "rating") {
+                    cards.sort((a,b) =>
+                        parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating)
+                    );
+                } else {
+                    cards.sort((a,b) =>
+                        a.dataset.name.localeCompare(b.dataset.name)
+                    );
+                }
+
+                cards.forEach(card => container.appendChild(card));
+
+                loader.style.display = "none";
+
+            }, 400);
+        });
+    }
+
+});
+</script>
+
+</body>
+</html>

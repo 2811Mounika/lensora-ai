@@ -5,103 +5,126 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        body {
-            background-color: #F3F4F6;
-            font-family: 'Segoe UI', sans-serif;
-        }
+  <style>
+    body {
+        background-color: #F3F4F6;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-        .navbar-custom {
-            background: #111827;
-            padding: 18px 0;
-        }
+    .navbar-custom {
+        background: #111827;
+        padding: 18px 0;
+    }
 
-        .navbar-custom h2 {
-            color: white;
-            font-weight: 600;
-        }
+    .navbar-custom h2 {
+        color: white;
+        font-weight: 600;
+    }
 
-        .hero {
-            padding: 100px 0;
-            text-align: center;
-            background: linear-gradient(to right, #111827, #1E293B);
-            color: white;
-        }
+    .hero {
+        padding: 100px 0;
+        text-align: center;
+        background: linear-gradient(to right, #111827, #1E293B);
+        color: white;
+    }
 
-        .hero h1 {
-            font-size: 42px;
-            font-weight: 700;
-        }
+    .hero h1 {
+        font-size: 42px;
+        font-weight: 700;
+    }
 
-        .hero p {
-            font-size: 18px;
-            color: #D1D5DB;
-        }
+    .hero p {
+        font-size: 18px;
+        color: #D1D5DB;
+    }
 
-        .section-spacing {
-            padding: 70px 0;
-        }
+    .section-spacing {
+        padding: 70px 0;
+    }
 
-        .search-section {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-        }
+    .search-section {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    }
 
-        .photo-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
-            transition: 0.3s;
-        }
+    /* 🔥 FORCE PERFECT 3-COLUMN GRID */
+    #resultsContainer {
+        display: flex;
+        flex-wrap: wrap;
+    }
 
-        .photo-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
-        }
+    .photographer-card {
+        width: 33.3333%;
+        padding: 12px;
+    }
 
-        .card-img-fixed {
-            height: 220px;
+    @media (max-width: 992px) {
+        .photographer-card {
+            width: 50%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .photographer-card {
             width: 100%;
-            object-fit: cover;
         }
+    }
 
-        .card-body-custom {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
+    .photo-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        transition: 0.3s;
+    }
 
-        .address-fixed {
-            font-size: 14px;
-            color: #6B7280;
-            height: 60px;
-            overflow: hidden;
-        }
+    .photo-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+    }
 
-        .rating-badge {
-            font-weight: 600;
-            font-size: 14px;
-            padding: 6px 10px;
-            border-radius: 8px;
-        }
+    .card-img-fixed {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+    }
 
-        .fade-in {
-            opacity: 0;
-            transform: translateY(15px);
-            animation: fadeUp 0.6s ease forwards;
-        }
+    .card-body-custom {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
 
-        @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .address-fixed {
+        font-size: 14px;
+        color: #6B7280;
+        height: 60px;
+        overflow: hidden;
+    }
+
+    .rating-badge {
+        font-weight: 600;
+        font-size: 14px;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    .fade-in {
+        opacity: 0;
+        transform: translateY(15px);
+        animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 </head>
 
 <body>
@@ -182,7 +205,7 @@
 <div class="row g-4" id="resultsContainer">
 
 {% for p in photographers %}
-<div class="col-lg-4 col-md-6 photographer-card fade-in"
+<div class="photographer-card fade-in"
      data-name="{{ p.name|lower }}"
      data-rating="{{ p.rating }}"
      data-delay="{{ loop.index }}">
@@ -255,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if(sortSelect){
         sortSelect.addEventListener("change", function() {
 
-            loader.style.display = "block";
+            loader.style.display = "";
 
             setTimeout(() => {
 

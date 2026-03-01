@@ -125,7 +125,6 @@
         <div class="search-section">
             <form method="POST" class="row g-3">
                 <div class="col-md-8">
-                    <!-- 🔥 CHANGED HERE -->
                     <input type="text"
                            name="city"
                            class="form-control form-control-lg"
@@ -143,6 +142,7 @@
 {% if photographers %}
 <section class="section-spacing">
 <div class="container">
+
 <div class="mb-5 text-center">
     <h2 class="fw-bold">
         Top Rated Photographers in {{ city }}
@@ -151,90 +151,92 @@
         Ranked intelligently based on ratings and reviews
     </p>
 </div>
-    <!-- 🔥 NEW DOWNLOAD BUTTON -->
-    <div class="text-end mb-4">
-        <form method="POST" action="/download">
-            <input type="hidden" name="city" value="{{ city }}">
-            <button class="btn btn-success">
-                Download Excel
-            </button>
-        </form>
+
+<div class="text-end mb-4">
+    <form method="POST" action="/download">
+        <input type="hidden" name="city" value="{{ city }}">
+        <button class="btn btn-success">
+            Download Excel
+        </button>
+    </form>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <input type="text" id="searchInput" class="form-control"
+               placeholder="Search photographer by name...">
     </div>
-
-    <!-- Controls -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <input type="text" id="searchInput" class="form-control"
-                   placeholder="Search photographer by name...">
-        </div>
-        <div class="col-md-4">
-            <select id="sortSelect" class="form-select">
-                <option value="rating">Sort by Rating (High → Low)</option>
-                <option value="name">Sort A-Z</option>
-            </select>
-        </div>
+    <div class="col-md-4">
+        <select id="sortSelect" class="form-select">
+            <option value="rating">Sort by Rating (High → Low)</option>
+            <option value="name">Sort A-Z</option>
+        </select>
     </div>
+</div>
 
-    <div id="loader" class="text-center mb-3" style="display:none;">
-        <div class="spinner-border text-primary"></div>
-        <p class="mt-2">Processing...</p>
-    </div>
+<div id="loader" class="text-center mb-3" style="display:none;">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Processing...</p>
+</div>
 
-    <div class="row g-4" id="resultsContainer">
+<div class="row g-4" id="resultsContainer">
 
-        {% for p in photographers %}
-        <div class="col-lg-4 col-md-6 photographer-card fade-in"
-             data-name="{{ p.name|lower }}"
-             data-rating="{{ p.rating }}"
-            data-delay="{{ loop.index }}"
+{% for p in photographers %}
+<div class="col-lg-4 col-md-6 photographer-card fade-in"
+     data-name="{{ p.name|lower }}"
+     data-rating="{{ p.rating }}"
+     data-delay="{{ loop.index }}">
 
-            <div class="photo-card">
+    <div class="photo-card">
 
-                {% if p.photo %}
-                <img src="{{ p.photo }}" class="card-img-fixed">
+        {% if p.photo %}
+        <img src="{{ p.photo }}" class="card-img-fixed">
+        {% endif %}
+
+        <div class="card-body-custom">
+
+            <div>
+                <h5>{{ p.name }}</h5>
+
+                <span class="rating-badge bg-success text-white">
+                    ⭐ {{ p.rating }}
+                </span>
+
+                {% if loop.index == 1 %}
+                <span class="badge bg-primary ms-2">AI Top Pick</span>
                 {% endif %}
 
-                <div class="card-body-custom">
-                    <div>
-                        <h5>{{ p.name }}</h5>
-
-                        <span class="rating-badge bg-success text-white">
-                            ⭐ {{ p.rating }}
-                        </span>
-
-                        {% if loop.index == 1 %}
-                        <span class="badge bg-primary ms-2">AI Top Pick</span>
-                        {% endif %}
-
-                        <p class="address-fixed mt-2">{{ p.address }}</p>
-                        <p><strong>📞</strong> {{ p.phone }}</p>
-                    </div>
-
-                    <div class="mt-auto pt-3">
-                        {% if p.website != "Not Available" %}
-                        <a href="{{ p.website }}" target="_blank"
-                           class="btn btn-sm btn-primary">Website</a>
-                        {% endif %}
-                        <a href="{{ p.maps_link }}" target="_blank"
-                           class="btn btn-sm btn-outline-dark">View Map</a>
-                    </div>
-                </div>
-
+                <p class="address-fixed mt-2">{{ p.address }}</p>
+                <p><strong>📞</strong> {{ p.phone }}</p>
             </div>
-        </div>
-        {% endfor %}
 
+            <div class="mt-auto pt-3">
+                {% if p.website != "Not Available" %}
+                <a href="{{ p.website }}" target="_blank"
+                   class="btn btn-sm btn-primary">Website</a>
+                {% endif %}
+                <a href="{{ p.maps_link }}" target="_blank"
+                   class="btn btn-sm btn-outline-dark">View Map</a>
+            </div>
+
+        </div>
     </div>
+</div>
+{% endfor %}
+
+</div>
 </div>
 </section>
 {% endif %}
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-document.querySelectorAll('.photographer-card').forEach(card => {
-    const delay = card.dataset.delay;
-    card.style.animationDelay = (delay * 0.07) + "s";
-});
+
+    document.querySelectorAll('.photographer-card').forEach(card => {
+        const delay = card.dataset.delay;
+        card.style.animationDelay = (delay * 0.07) + "s";
+    });
+
     const searchInput = document.getElementById("searchInput");
     const sortSelect = document.getElementById("sortSelect");
     const loader = document.getElementById("loader");
@@ -245,7 +247,7 @@ document.querySelectorAll('.photographer-card').forEach(card => {
             const value = this.value.toLowerCase();
             document.querySelectorAll(".photographer-card").forEach(card => {
                 card.style.display =
-                    card.dataset.name.includes(value) ? "block" : "none";
+                    card.dataset.name.includes(value) ? "" : "none";
             });
         });
     }
@@ -253,7 +255,7 @@ document.querySelectorAll('.photographer-card').forEach(card => {
     if(sortSelect){
         sortSelect.addEventListener("change", function() {
 
-            loader.style.display = "";
+            loader.style.display = "block";
 
             setTimeout(() => {
 

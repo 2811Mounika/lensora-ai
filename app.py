@@ -30,39 +30,54 @@ def get_place_details(place_id):
     }
 
 
+import time
+
 def get_photographers(city):
     search_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 
-    params = {
-        "query": f"wedding photographers in {city}",
-        "key": API_KEY
-    }
-
-    response = requests.get(search_url, params=params)
-    data = response.json()
-
     photographers = []
+    next_page_token = None
 
-    for place in data.get("results", [])[:30]:
-        place_id = place.get("place_id")
-        details = get_place_details(place_id)
+    while True:
 
-        photo_url = None
-        if "photos" in place:
-            photo_reference = place["photos"][0]["photo_reference"]
-            photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference={photo_reference}&key={API_KEY}"
+        params = {
+            "query": f"wedding photographers in {city}",
+            "key": API_KEY
+        }
 
-        photographers.append({
-            "name": place.get("name"),
-            "address": place.get("formatted_address"),
-            "rating": place.get("rating", 0),
-            "phone": details.get("phone"),
-            "website": details.get("website"),
-            "maps_link": f"https://www.google.com/maps/place/?q=place_id:{place_id}",
-            "photo": photo_url
-        })
+        if next_page_token:
+            params["pagetoken"] = next_page_token
 
-    # Sort by rating (highest first)
+        response = requests.get(search_url, params=params)
+        data = response.json()
+
+        for place in data.get("results", []):
+            place_id = place.get("place_id")
+            details = get_place_details(place_id)
+
+            photo_url = None
+            if "photos" in place:
+                photo_reference = place["photos"][0]["photo_reference"]
+                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference={photo_reference}&key={API_KEY}"
+
+            photographers.append({
+                "name": place.get("name"),
+                "address": place.get("formatted_address"),
+                "rating": place.get("rating", 0),
+                "phone": details.get("phone"),
+                "website": details.get("website"),
+                "maps_link": f"https://www.google.com/maps/place/?q=place_id:{place_id}",
+                "photo": photo_url
+            })
+
+        next_page_token = data.get("next_page_token")
+
+        if not next_page_token:
+            break
+
+        # Google requires small delay before next page request
+        time.sleep(2)
+
     photographers.sort(key=lambda x: x["rating"], reverse=True)
 
     return photographers

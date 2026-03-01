@@ -125,19 +125,12 @@
         <div class="search-section">
             <form method="POST" class="row g-3">
                 <div class="col-md-8">
-                    <select name="city" class="form-select form-select-lg" required>
-                        <option disabled selected>Select Location</option>
-                        <option>Guntur</option>
-                        <option>Vijayawada</option>
-                        <option>Narasaraopet</option>
-                        <option>Tenali</option>
-                        <option>Mangalagiri</option>
-                        <option>Amaravati</option>
-                        <option>Sattenapalle</option>
-                        <option>Chilakaluripet</option>
-                        <option>Piduguralla</option>
-                        <option>Repalle</option>
-                    </select>
+                    <!-- 🔥 CHANGED HERE -->
+                    <input type="text"
+                           name="city"
+                           class="form-control form-control-lg"
+                           placeholder="Enter any location (e.g., Hyderabad, Chennai, Delhi)"
+                           required>
                 </div>
                 <div class="col-md-4">
                     <button class="btn btn-primary btn-lg w-100">Analyze</button>
@@ -150,6 +143,16 @@
 {% if photographers %}
 <section class="section-spacing">
 <div class="container">
+
+    <!-- 🔥 NEW DOWNLOAD BUTTON -->
+    <div class="text-end mb-4">
+        <form method="POST" action="/download">
+            <input type="hidden" name="city" value="{{ city }}">
+            <button class="btn btn-success">
+                Download Excel
+            </button>
+        </form>
+    </div>
 
     <!-- Controls -->
     <div class="row mb-4">
@@ -173,10 +176,10 @@
     <div class="row g-4" id="resultsContainer">
 
         {% for p in photographers %}
-           <div class="col-lg-4 col-md-6 photographer-card fade-in"
-               data-name="{{ p.name|lower }}"
-               data-rating="{{ p.rating }}"
-               data-delay="{{ loop.index * 0.07 }}">
+        <div class="col-lg-4 col-md-6 photographer-card fade-in"
+             data-name="{{ p.name|lower }}"
+             data-rating="{{ p.rating }}"
+             style="animation-delay: {{ loop.index * 0.07 }}s;">
 
             <div class="photo-card">
 
@@ -226,12 +229,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const sortSelect = document.getElementById("sortSelect");
     const loader = document.getElementById("loader");
     const container = document.getElementById("resultsContainer");
-
-    // Apply animation delays from data attributes to avoid inline template in CSS
-    document.querySelectorAll('.photographer-card').forEach(card => {
-        const d = card.dataset.delay;
-        if (d) card.style.animationDelay = parseFloat(d) + 's';
-    });
 
     if(searchInput){
         searchInput.addEventListener("input", function() {

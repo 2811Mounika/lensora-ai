@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 import requests
 import os
+import pandas as pd
+from io import BytesIO
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,6 +10,25 @@ load_dotenv()
 app = Flask(__name__)
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
+
+
+def get_place_details(place_id):
+    details_url = "https://maps.googleapis.com/maps/api/place/details/json"
+
+    params = {
+        "place_id": place_id,
+        "fields": "formatted_phone_number,website",
+        "key": API_KEY
+    }
+
+    response = requests.get(details_url, params=params)
+    result = response.json().get("result", {})
+
+    return {
+        "phone": result.get("formatted_phone_number", "Not Available"),
+        "website": result.get("website", "Not Available")
+    }
+
 
 def get_photographers(city):
     search_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -22,7 +43,7 @@ def get_photographers(city):
 
     photographers = []
 
-    for place in data.get("results", [])[:20]:
+    for place in data.get("results", [])[:30]:
         place_id = place.get("place_id")
         details = get_place_details(place_id)
 
@@ -46,35 +67,38 @@ def get_photographers(city):
 
     return photographers
 
-def get_place_details(place_id):
-    details_url = "https://maps.googleapis.com/maps/api/place/details/json"
-
-    params = {
-        "place_id": place_id,
-        "fields": "formatted_phone_number,website",
-        "key": API_KEY
-    }
-
-    response = requests.get(details_url, params=params)
-    result = response.json().get("result", {})
-
-    return {
-        "phone": result.get("formatted_phone_number", "Not Available"),
-        "website": result.get("website", "Not Available")
-    }
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     photographers = []
+    city = ""
 
     if request.method == "POST":
-        city = request.form["city"]
+        city = request.form["city"].strip()
         photographers = get_photographers(city)
 
-    return render_template("index.html", photographers=photographers)
+    return render_template("index.html",
+                           photographers=photographers,
+                           city=city)
 
-import os
+
+@app.route("/download", methods=["POST"])
+def download_excel():
+    city = request.form["city"].strip()
+    photographers = get_photographers(city)
+
+    df = pd.DataFrame(photographers)
+
+    output = BytesIO()
+    df.to_excel(output, index=False)
+    output.seek(0)
+
+    return send_file(
+        output,
+        download_name=f"{city}_photographers.xlsx",
+        as_attachment=True
+    )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))

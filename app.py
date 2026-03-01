@@ -37,8 +37,9 @@ def get_photographers(city):
 
     photographers = []
     next_page_token = None
+    page_count = 0   # prevent infinite loop
 
-    while True:
+    while page_count < 3:  # Google max 3 pages
 
         params = {
             "query": f"wedding photographers in {city}",
@@ -50,6 +51,9 @@ def get_photographers(city):
 
         response = requests.get(search_url, params=params)
         data = response.json()
+
+        if data.get("status") not in ["OK", "ZERO_RESULTS"]:
+            break
 
         for place in data.get("results", []):
             place_id = place.get("place_id")
@@ -75,8 +79,8 @@ def get_photographers(city):
         if not next_page_token:
             break
 
-        # Google requires small delay before next page request
-        time.sleep(2)
+        page_count += 1
+        time.sleep(2)  # required delay
 
     photographers.sort(key=lambda x: x["rating"], reverse=True)
 

@@ -99,7 +99,6 @@ def get_photographers(city):
                     "rating": place.get("rating", 0),
                     "phone": details.get("phone"),
                     "website": details.get("website"),
-                    "maps_link": f"https://www.google.com/maps/place/?q=place_id:{place_id}",
                     "photo": photo_url,
                 }
             )

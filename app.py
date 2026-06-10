@@ -1,6 +1,5 @@
 from io import BytesIO
 import os
-import time
 
 import pandas as pd
 import requests
@@ -56,59 +55,46 @@ def get_photographers(city):
 
     search_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
     photographers = []
-    next_page_token = None
-    page_count = 0
 
-    while page_count < 3:
-        params = {
-            "query": f"wedding photographers in {city}",
-            "key": API_KEY,
-        }
-        if next_page_token:
-            params["pagetoken"] = next_page_token
+    try:
+        response = requests.get(
+            search_url,
+            params={"query": f"wedding photographers in {city}", "key": API_KEY},
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException:
+        return [], "Unable to reach Google Places API. Check internet/firewall and try again."
 
-        try:
-            response = requests.get(search_url, params=params, timeout=REQUEST_TIMEOUT)
-            response.raise_for_status()
-            data = response.json()
-        except requests.RequestException:
-            return [], "Unable to reach Google Places API. Check internet/firewall and try again."
+    status = data.get("status")
+    if status == "ZERO_RESULTS":
+        return [], ""
+    if status != "OK":
+        return [], format_google_error(status, data.get("error_message"))
 
-        status = data.get("status")
-        if status == "ZERO_RESULTS":
-            break
-        if status != "OK":
-            return [], format_google_error(status, data.get("error_message"))
+    for place in data.get("results", []):
+        place_id = place.get("place_id")
+        details = get_place_details(place_id)
 
-        for place in data.get("results", []):
-            place_id = place.get("place_id")
-            details = get_place_details(place_id)
-
-            photo_url = None
-            if "photos" in place:
-                photo_reference = place["photos"][0]["photo_reference"]
-                photo_url = (
-                    "https://maps.googleapis.com/maps/api/place/photo"
-                    f"?maxwidth=400&photo_reference={photo_reference}&key={API_KEY}"
-                )
-
-            photographers.append(
-                {
-                    "name": place.get("name"),
-                    "address": place.get("formatted_address"),
-                    "rating": place.get("rating", 0),
-                    "phone": details.get("phone"),
-                    "website": details.get("website"),
-                    "photo": photo_url,
-                }
+        photo_url = None
+        if "photos" in place:
+            photo_reference = place["photos"][0]["photo_reference"]
+            photo_url = (
+                "https://maps.googleapis.com/maps/api/place/photo"
+                f"?maxwidth=400&photo_reference={photo_reference}&key={API_KEY}"
             )
 
-        next_page_token = data.get("next_page_token")
-        if not next_page_token:
-            break
-
-        page_count += 1
-        time.sleep(2)
+        photographers.append(
+            {
+                "name": place.get("name"),
+                "address": place.get("formatted_address"),
+                "rating": place.get("rating", 0),
+                "phone": details.get("phone"),
+                "website": details.get("website"),
+                "photo": photo_url,
+            }
+        )
 
     photographers.sort(key=lambda x: x["rating"], reverse=True)
     return photographers, ""
